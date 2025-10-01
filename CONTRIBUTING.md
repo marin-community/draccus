@@ -38,7 +38,7 @@ uv run pytest --snapshot-update
 
 ## Code Style
 
-We use `black`, `ruff`, and `mypy` to maintain code quality. Run pre-commit hooks:
+We use `black` and `ruff` and a few other pre-commit hooks. You can run them like this:
 
 ```bash
 # One time, to run on each commit
