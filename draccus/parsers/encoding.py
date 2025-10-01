@@ -82,7 +82,7 @@ def encode(obj: Any, declared_type: Optional[Type] = None) -> Any:
     if declared_type is None:
         declared_type = type(obj)
     adapter = TypeAdapter(declared_type)
-    return adapter.dump_python(obj)
+    return adapter.dump_python(obj, mode="json", serialize_as_any=True)
 
 
 def encode_dataclass(obj: Any, declared_type: Optional[Type] = None):

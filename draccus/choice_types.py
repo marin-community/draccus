@@ -40,6 +40,9 @@ import importlib
 import pkgutil
 from typing import Any, Callable, ClassVar, Dict, Optional, Protocol, Type, TypeVar, overload, runtime_checkable
 
+from pydantic import BaseModel, ConfigDict, TypeAdapter, model_validator
+from draccus.utils import ParsingError
+
 T = TypeVar("T")
 
 
@@ -72,6 +75,22 @@ class ChoiceType(Protocol):
 
 class ChoiceRegistryBase(ChoiceType):
     _choice_registry: ClassVar[Dict[str, Any]]
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def validate_choice_registry(cls, values, handler) -> Any:
+        if isinstance(values, cls):
+            return values
+        type_name = values.get(CHOICE_TYPE_KEY, None)
+        if type_name is None:
+            return handler(values)
+        try:
+            choice_class = cls.get_choice_class(type_name)
+        except KeyError:
+            raise ParsingError(f"got choice key '{type_name}' but expected one of {cls.get_known_choices().keys()}")
+
+        adapter = TypeAdapter(choice_class)
+        return adapter.validate_python({k: v for k, v in values.items() if k != CHOICE_TYPE_KEY})
 
     @classmethod
     def get_choice_class(cls, name: str) -> Any:
