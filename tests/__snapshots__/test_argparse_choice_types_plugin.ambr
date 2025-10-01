@@ -23,12 +23,10 @@
   
     --model.layers int
     --model.hidden_size int
-                          (default: 100)
   
   GptConfig ['model']:
   
     --model.layers int
     --model.attn_pdrop float
-                          (default: 0.1)
   '''
 # ---
