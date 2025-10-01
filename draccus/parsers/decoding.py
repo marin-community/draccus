@@ -28,6 +28,8 @@ from typing import (
     get_args,
 )
 
+from pydantic import TypeAdapter
+
 from draccus.choice_types import CHOICE_TYPE_KEY, ChoiceType
 from draccus.parsers.registry_utils import RegistryFunc, withregistry
 from draccus.utils import (
@@ -62,7 +64,8 @@ class DecodingFunction(Protocol[T_co]):
 
 @withregistry
 def decode(cls: Type[T], raw_value: Any) -> T:
-    raise NotImplementedError("TODO(jder)")
+    adapter = TypeAdapter(cls)
+    return adapter.validate_python(raw_value)
 
 
 def decode_from_init(cls: Type[T], raw_value: Any, path: Sequence[str]) -> T:

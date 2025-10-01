@@ -24,6 +24,8 @@ from logging import getLogger
 from os import PathLike
 from typing import Any, Dict, Hashable, List, Optional, Tuple, Type, Union
 
+from pydantic import TypeAdapter
+
 from draccus.choice_types import CHOICE_TYPE_KEY
 from draccus.parsers.registry_utils import withregistry
 from draccus.utils import is_choice_type
@@ -77,7 +79,10 @@ def encode(obj: Any, declared_type: Optional[Type] = None) -> Any:
                       should be encoded as a choice type based on its declared type rather than
                       its concrete type.
     """
-    raise NotImplementedError("TODO(jder)")
+    if declared_type is None:
+        declared_type = type(obj)
+    adapter = TypeAdapter(declared_type)
+    return adapter.dump_python(obj)
 
 
 def encode_dataclass(obj: Any, declared_type: Optional[Type] = None):
