@@ -53,7 +53,8 @@ python_version = "3.9"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--doctest-modules --ignore=tests/draccus_choice_plugins"
+# --snapshot-warn-unused changes the default from error to warning (some snapshot tests are skipped)
+addopts = "--doctest-modules --ignore=tests/draccus_choice_plugins --snapshot-warn-unused"
 testpaths = [
     "tests",
 ]
