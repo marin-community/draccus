@@ -1,0 +1,43 @@
+# serializer version: 1
+# name: test_default_help_inline
+  '''
+  usage: draccus [-h] [--config_path str] [--a int] [--cache str] [--misc str]
+                 [--misc2 str]
+  
+  options:
+    -h, --help         show this help message and exit
+    --config_path str  Path for a config file to parse with draccus (default:
+                       None)
+  
+  PreferredHelpConfig:
+    A simple base-class example
+  
+    --a int            Parameter (int) controlling number of iterations
+                       (default: None)
+    --cache str        Path to cache directory (as string) (default: None)
+    --misc str         Sets the mode of miscellaneous parameter handling
+                       (default: standard)
+    --misc2 str        Controls the behavior of `misc2` (default: left-first)
+  '''
+# ---
+# name: test_default_help_inline.1
+  '''
+  usage: draccus [-h] [--config_path str] [--a int] [--cache str] [--misc str]
+                 [--misc2 str]
+  
+  options:
+    -h, --help         show this help message and exit
+    --config_path str  Path for a config file to parse with draccus (default:
+                       None)
+  
+  PreferredHelpConfig:
+    A simple base-class example
+  
+    --a int            Parameter (int) controlling number of iterations
+                       (default: None)
+    --cache str        Path to cache directory (as string) (default: None)
+    --misc str         Sets the mode of miscellaneous parameter handling
+                       (default: standard)
+    --misc2 str        Controls the behavior of `misc2` (default: left-first)
+  '''
+# ---
