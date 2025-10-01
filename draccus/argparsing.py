@@ -6,6 +6,7 @@
 """Simple, Elegant Argument parsing.
 @author: Fabrice Normandin
 """
+
 import argparse
 import dataclasses
 import inspect
@@ -209,14 +210,7 @@ def parse(
         exit_on_error: Whether to exit if an error occurs.
         preferred_help: Preferred location to parse help text for fields (< "inline" | "above" | "below" >)
     """
-    parser = ArgumentParser(
-        config_class=config_class,
-        config_path=config_path,
-        exit_on_error=exit_on_error,
-        prog=prog,
-        preferred_help=preferred_help,
-    )
-    return parser.parse_args(args)
+    raise NotImplementedError("TODO(jder)")
 
 
 def wrap(config_path: Optional[os.PathLike] = None, preferred_help: str = HelpOrder.inline):

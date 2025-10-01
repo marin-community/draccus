@@ -4,6 +4,7 @@
 # Copyright 2021 Elad Richardson
 
 """Functions for decoding dataclass fields from "raw" values (e.g. from json)."""
+
 import functools
 import typing
 from collections import OrderedDict
@@ -32,7 +33,6 @@ from draccus.parsers.registry_utils import RegistryFunc, withregistry
 from draccus.utils import (
     DecodingError,
     ParsingError,
-    canonicalize_union,
     format_error,
     get_type_arguments,
     has_generic_arg,
@@ -62,8 +62,7 @@ class DecodingFunction(Protocol[T_co]):
 
 @withregistry
 def decode(cls: Type[T], raw_value: Any) -> T:
-    cls = canonicalize_union(cls)
-    return get_decoding_fn(cls)(raw_value, ())  # type: ignore
+    raise NotImplementedError("TODO(jder)")
 
 
 def decode_from_init(cls: Type[T], raw_value: Any, path: Sequence[str]) -> T:

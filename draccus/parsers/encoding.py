@@ -13,19 +13,19 @@ import numpy as np
 def encode_ndarray(obj: np.ndarray) -> str:
     return obj.tostring()
 """
+
 import json
 import typing
 from argparse import Namespace
 from collections.abc import Mapping
-from dataclasses import fields, is_dataclass
+from dataclasses import fields
 from enum import Enum
 from logging import getLogger
 from os import PathLike
 from typing import Any, Dict, Hashable, List, Optional, Tuple, Type, Union
 
-from draccus import utils
 from draccus.choice_types import CHOICE_TYPE_KEY
-from draccus.parsers.registry_utils import RegistryFunc, withregistry
+from draccus.parsers.registry_utils import withregistry
 from draccus.utils import is_choice_type
 
 logger = getLogger(__name__)
@@ -77,56 +77,7 @@ def encode(obj: Any, declared_type: Optional[Type] = None) -> Any:
                       should be encoded as a choice type based on its declared type rather than
                       its concrete type.
     """
-    if declared_type is not None:
-        underlying_type = typing.get_origin(declared_type) or declared_type
-        # we have to handle unions specially for declared types:
-        if utils.is_union(declared_type):
-            # find the first type that matches the object's type
-            for t in typing.get_args(declared_type):
-                # we can't use subscripted generic types here
-                if typing.get_origin(t) is typing.Literal:
-                    for arg in typing.get_args(t):
-                        if arg == obj:
-                            underlying_type = t
-                            declared_type = t
-                            break
-                elif isinstance(obj, typing.get_origin(t) or t):
-                    underlying_type = typing.get_origin(t) or t
-                    declared_type = t
-                    break
-    else:
-        underlying_type = type(obj)
-    cached_func: RegistryFunc = encode.dispatch(underlying_type)
-
-    if cached_func is None:
-        # see if the actual type has a custom encoder
-        cached_func = encode.dispatch(type(obj))
-
-    if cached_func is not None:
-        fn = cached_func.func
-
-        # we want to support the old interface where the decoding function
-        # takes only one argument, so we wrap it here
-        try:
-            return fn(obj, declared_type)
-        except TypeError:
-            try:
-                return fn(obj)
-            except Exception as e:  # pylint: disable=broad-except
-                raise Exception(f"Couldn't encode {obj}") from e
-
-    try:
-        if underlying_type is not None and is_choice_type(underlying_type):
-            return encode_choice(obj, underlying_type)
-        elif is_dataclass(obj):
-            return encode_dataclass(obj, declared_type)
-        elif obj is None:
-            return None
-        else:
-            raise Exception(f"No parser for object {obj} of type {type(obj)}, consider using draccus.encode.register")
-    except Exception as e:
-        logger.debug(f"Cannot encode object {obj}: {e}")
-        raise e
+    raise NotImplementedError("TODO(jder)")
 
 
 def encode_dataclass(obj: Any, declared_type: Optional[Type] = None):
