@@ -14,8 +14,8 @@ from .testutils import *
 
 
 class Color(Enum):
-    blue = auto()
-    red = auto()
+    blue = "blue"
+    red = "red"
 
 
 def test_encode_basic_types():
@@ -137,7 +137,6 @@ class Zoo:
 
 
 def test_encode_choice_type():
-
     dog = Dog("Fido", 3)
     expected = {"type": "dog", "name": "Fido", "age": 3}
     assert encode(dog, Animal) == expected
@@ -214,7 +213,6 @@ class ActivationFunctionEnum(str, enum.Enum):
 
 
 def test_encode_enum_str():
-
     assert encode(ActivationFunctionEnum.relu) == "relu"
     assert encode(ActivationFunctionEnum.silu) == "silu"
     assert encode(ActivationFunctionEnum.swish) == "swish"
