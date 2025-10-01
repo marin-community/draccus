@@ -44,26 +44,29 @@ def test_dump_load(simple_attribute, config_type, tmp_path):
     if config_type != "":
         draccus.set_config_type(config_type)
 
-    @dataclass(frozen=True)
-    class SomeClass:
-        val: Optional[some_type] = None
+    try:
 
-    b = SomeClass(val=expected_value)
+        @dataclass(frozen=True)
+        class SomeClass:
+            val: Optional[some_type] = None
 
-    tmp_file = tmp_path / "config"
-    draccus.dump(b, tmp_file.open("w"))
+        b = SomeClass(val=expected_value)
 
-    new_b = draccus.parse(config_class=SomeClass, config_path=tmp_file, args="")
-    assert new_b == b
+        tmp_file = tmp_path / "config"
+        draccus.dump(b, tmp_file.open("w"))
 
-    arguments = shlex.split(f"--config_path {tmp_file}")
-    new_b = draccus.parse(config_class=SomeClass, args=arguments)
-    assert new_b == b
+        new_b = draccus.parse(config_class=SomeClass, config_path=tmp_file, args="")
+        assert new_b == b
 
-    new_b = draccus.parse(config_class=SomeClass, args="")
-    assert new_b != b
+        arguments = shlex.split(f"--config_path {tmp_file}")
+        new_b = draccus.parse(config_class=SomeClass, args=arguments)
+        assert new_b == b
 
-    draccus.set_config_type("yaml")
+        new_b = draccus.parse(config_class=SomeClass, args="")
+        assert new_b != b
+
+    finally:
+        draccus.set_config_type("yaml")
 
 
 def test_dump_load_context():
