@@ -1,57 +1,19 @@
 # serializer version: 1
-# name: test_literal_help_text[mixed_literal]
-  '''
-  usage: draccus [-h] [--config_path str] [--mode {train,1,True}]
-                 [--size {small,20,False}]
-  
-  options:
-    -h, --help            show this help message and exit
-    --config_path str     Path for a config file to parse with draccus (default:
-                          None)
-  
-  MixedLiteralConfig:
-  
-    --mode {train,1,True}
-    --size {small,20,False}
-  '''
-# ---
-# name: test_literal_help_text[numeric_literal]
-  '''
-  usage: draccus [-h] [--config_path str] [--mode {1,2,3}] [--size {10,20,30}]
-  
-  options:
-    -h, --help         show this help message and exit
-    --config_path str  Path for a config file to parse with draccus (default:
-                       None)
-  
-  NumericLiteralConfig:
-  
-    --mode {1,2,3}     
-    --size {10,20,30}
-  '''
-# ---
-# name: test_literal_help_text[string_literal]
-  '''
-  usage: draccus [-h] [--config_path str] [--mode {train,test,eval}]
-                 [--size {small,medium,large}]
-  
-  options:
-    -h, --help            show this help message and exit
-    --config_path str     Path for a config file to parse with draccus (default:
-                          None)
-  
-  StringLiteralConfig:
-  
-    --mode {train,test,eval}
-    --size {small,medium,large}
-  '''
-# ---
 # name: test_mixed_literal_invalid[mode]
-  DecodingError(('mode',), "Cannot convert 'invalid' (<class 'str'>) into one of: train, 1, True")
+  1 validation error for MixedLiteralConfig
+  mode
+    Input should be 'train', 1 or True [type=literal_error, input_value='invalid', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/literal_error
 # ---
 # name: test_mixed_literal_invalid[size]
-  DecodingError(('size',), "Cannot convert '15' (<class 'int'>) into one of: small, 20, False")
+  1 validation error for MixedLiteralConfig
+  size
+    Input should be 'small', 20 or False [type=literal_error, input_value=15, input_type=int]
+      For further information visit https://errors.pydantic.dev/2.11/v/literal_error
 # ---
 # name: test_string_literal_invalid
-  DecodingError(('mode',), "Cannot convert 'invalid' (<class 'str'>) into one of: train, test, eval")
+  1 validation error for StringLiteralConfig
+  mode
+    Input should be 'train', 'test' or 'eval' [type=literal_error, input_value='invalid', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/literal_error
 # ---
