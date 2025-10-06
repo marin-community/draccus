@@ -21,12 +21,12 @@
   
   MlpConfig ['model']:
   
-    --model.layers int
+    --model.layers int    
     --model.hidden_size int
   
   GptConfig ['model']:
   
-    --model.layers int
+    --model.layers int    
     --model.attn_pdrop float
   '''
 # ---

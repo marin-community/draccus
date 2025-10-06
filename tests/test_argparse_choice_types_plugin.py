@@ -6,6 +6,7 @@ import dataclasses
 import sys
 
 import pytest
+from pydantic import ValidationError
 
 from draccus import ParsingError
 
@@ -35,10 +36,10 @@ def test_plugin_registry_argparse():
     with pytest.raises(argparse.ArgumentError):
         Something.setup("--model.type baby")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Something.setup("--model.type gpt --model.layers 12 --model.hidden_size 6")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Something.setup("--model.attn_pdrop 12")
 
 

@@ -5,7 +5,7 @@ import argparse
 import dataclasses
 
 import pytest
-from pydantic import ConfigDict
+from pydantic import ConfigDict, ValidationError
 
 from draccus import ParsingError
 from draccus.choice_types import ChoiceRegistry
@@ -15,6 +15,7 @@ from .testutils import TestSetup
 
 @dataclasses.dataclass(frozen=True)
 class Person(ChoiceRegistry):
+    __pydantic_config__ = ConfigDict(extra="forbid")
     name: str  # Person's name
 
 
@@ -46,7 +47,7 @@ def test_choice_registry_argparse():
     with pytest.raises(argparse.ArgumentError):
         Something.setup("--person.type baby --person.name bob")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         Something.setup("--person.type adult --person.name bob --person.age 10 --person.favorite_toy truck")
 
     with pytest.raises(ParsingError):

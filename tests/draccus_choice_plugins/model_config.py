@@ -4,11 +4,14 @@
 import dataclasses
 from typing import Optional
 
+from pydantic import ConfigDict
+
 from draccus.choice_types import PluginRegistry
 
 
 @dataclasses.dataclass(frozen=True)
 class ModelConfig(PluginRegistry, discover_packages_path="tests.draccus_choice_plugins"):
+    __pydantic_config__ = ConfigDict(extra="forbid")
     layers: int
 
     @classmethod

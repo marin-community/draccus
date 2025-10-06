@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 import pytest
+from pydantic import ValidationError
 
 from draccus import ParsingError
 from draccus.utils import DecodingError
@@ -22,7 +23,7 @@ def test_tuple_with_n_items_takes_only_n_values(snapshot):
     assert c.ints == (1, 5)
     c = Container.setup("--ints [4,8]")
     assert c.ints == (4, 8)
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         c = Container.setup("--ints [4,5,6,7,8]")
 
     assert snapshot == str(e.value)

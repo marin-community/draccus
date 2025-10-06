@@ -7,16 +7,18 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import List
 
+from pydantic import ValidationError
+
 from draccus import ParsingError
 
 from .testutils import TestSetup, raises
 
 
 class Color(Enum):
-    blue: str = auto()  # type: ignore
-    red: str = auto()  # type: ignore
-    green: str = auto()  # type: ignore
-    orange: str = auto()  # type: ignore
+    blue: str = "blue"  # type: ignore
+    red: str = "red"  # type: ignore
+    green: str = "green"  # type: ignore
+    orange: str = "orange"  # type: ignore
 
 
 class BigColor(Enum):
@@ -65,7 +67,7 @@ def test_passing_enum_to_choice_no_default_makes_required_arg():
     class Something(TestSetup):
         favorite_color: Color = field()
 
-    with raises(ParsingError):
+    with raises(ValidationError):
         s = Something.setup("")
 
     s = Something.setup("--favorite_color blue")

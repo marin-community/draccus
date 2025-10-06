@@ -6,6 +6,7 @@
 from dataclasses import dataclass
 
 import pytest
+from pydantic import ValidationError
 
 from draccus import ParsingError
 from draccus.utils import DecodingError
@@ -34,10 +35,10 @@ def test_bool_attributes_work():
 
 
 def test_bool_doesnt_parse_non_bools():
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         Base.setup("--a 5 --f 5")
 
-    assert e.value.key_path == ("f",)
+    assert e.value.errors()[0]["loc"] == ("f",)
 
-    with pytest.raises(DecodingError):
+    with pytest.raises(ValidationError):
         Base.setup("--a 5 --f foo")

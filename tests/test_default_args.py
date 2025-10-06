@@ -5,6 +5,8 @@
 
 from dataclasses import dataclass
 
+from pydantic import ValidationError
+
 from draccus.utils import DecodingError
 
 from .testutils import *
@@ -20,7 +22,7 @@ def test_no_default_argument(simple_attribute):
     cfg = draccus.parse(config_class=SomeClass, args=shlex.split(f"--a {passed_value}"))
     assert cfg == SomeClass(a=expected_value)
 
-    with raises(DecodingError):
+    with raises(ValidationError):
         draccus.parse(config_class=SomeClass, args="")
 
 

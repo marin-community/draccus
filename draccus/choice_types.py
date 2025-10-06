@@ -40,8 +40,7 @@ import importlib
 import pkgutil
 from typing import Any, Callable, ClassVar, Dict, Optional, Protocol, Type, TypeVar, overload, runtime_checkable
 
-import pydantic
-from pydantic import ConfigDict, TypeAdapter, model_validator
+from pydantic import TypeAdapter, model_serializer, model_validator
 
 from draccus.utils import ParsingError
 
@@ -75,10 +74,8 @@ class ChoiceType(Protocol):
         ...
 
 
-class ChoiceRegistryBase(pydantic.BaseModel):
+class ChoiceRegistryBase:
     _choice_registry: ClassVar[Dict[str, Any]]
-
-    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="wrap")
     @classmethod
@@ -107,6 +104,14 @@ class ChoiceRegistryBase(pydantic.BaseModel):
 
             adapter = TypeAdapter(choice_class)
             return adapter.validate_python({k: v for k, v in values.items() if k != CHOICE_TYPE_KEY})
+
+    @model_serializer(mode="wrap")
+    def serialize_model(self, handler):
+        result = handler(self)
+        typ = self.__class__.get_choice_name(self.__class__)
+        old_typ = result.setdefault(CHOICE_TYPE_KEY, typ)
+        assert old_typ == typ, f"Expected {typ} but got {old_typ}"
+        return result
 
     @classmethod
     def get_choice_class(cls, name: str) -> Any:

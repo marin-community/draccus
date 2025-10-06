@@ -4,6 +4,7 @@
 import dataclasses
 
 import pytest
+from pydantic import ConfigDict, ValidationError
 
 import draccus
 from draccus import ParsingError
@@ -13,6 +14,7 @@ from draccus.utils import DecodingError
 
 @dataclasses.dataclass
 class Person(ChoiceRegistry):
+    __pydantic_config__ = ConfigDict(extra="forbid")
     name: str  # Person's name
 
 
@@ -31,29 +33,35 @@ Person.register_subclass("child", Child)
 
 
 def test_choice_registry_decode():
-    assert draccus.decode(Person, {"type": "adult", "name": "bob", "age": 10}) == Adult("bob", 10)
-    assert draccus.decode(Person, {"type": "child", "name": "bob", "favorite_toy": "truck"}) == Child("bob", "truck")
+    assert draccus.decode(Person, {"type": "adult", "name": "bob", "age": 10}) == Adult(name="bob", age=10)
+    assert draccus.decode(Person, {"type": "child", "name": "bob", "favorite_toy": "truck"}) == Child(
+        name="bob", favorite_toy="truck"
+    )
 
     with pytest.raises(ParsingError):
         draccus.decode(Person, {"type": "baby", "name": "bob"})
 
-    with pytest.raises(DecodingError):
+    with pytest.raises(ValidationError):
         draccus.decode(Person, {"type": "adult", "name": "bob", "age": 10, "favorite_toy": "truck"})
 
-    with pytest.raises(DecodingError):
+    with pytest.raises(ValidationError):
         draccus.decode(Person, {"type": "adult", "name": 3})
 
 
 def test_registry_decode_subtype_without_type():
     draccus.decode(Child, {"name": "bob", "favorite_toy": "truck"})
 
-    with pytest.raises(DecodingError):
+    with pytest.raises(ParsingError):  # TODO(jder): DecodingError
         draccus.decode(Child, {"type": "adult", "name": "bob", "age": 10})
 
 
 def test_choice_registry_encode():
-    assert draccus.encode(Adult("bob", 10), Person) == {"type": "adult", "name": "bob", "age": 10}
-    assert draccus.encode(Child("bob", "truck"), Person) == {"type": "child", "name": "bob", "favorite_toy": "truck"}
+    assert draccus.encode(Adult(name="bob", age=10), Person) == {"type": "adult", "name": "bob", "age": 10}
+    assert draccus.encode(Child(name="bob", favorite_toy="truck"), Person) == {
+        "type": "child",
+        "name": "bob",
+        "favorite_toy": "truck",
+    }
 
 
 def test_is_choicetype():
