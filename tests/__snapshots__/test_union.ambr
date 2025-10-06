@@ -1,4 +1,12 @@
 # serializer version: 1
+# name: test_union_error_message_atomics
+  '''
+  `x`: Could not decode the value into any of the given types:
+      float: Couldn't parse '1.2.3' into a float
+      bool: Couldn't parse '1.2.3' into a bool
+  
+  '''
+# ---
 # name: test_union_error_message_dataclasses[missing]
   '''
   `x`: Could not decode the value into any of the given types:
@@ -12,6 +20,15 @@
   `x`: Could not decode the value into any of the given types:
       Baz_e: `z`: Couldn't parse '1.2.3' into an int
       Bar_e: `z`: Couldn't parse '1.2.3' into a bool
+  
+  '''
+# ---
+# name: test_union_error_message_nested
+  '''
+  `x`: Could not decode the value into any of the given types:
+      float: Couldn't parse '1.2.3' into a float
+      int: Couldn't parse '1.2.3' into an int
+      bool: Couldn't parse '1.2.3' into a bool
   
   '''
 # ---
