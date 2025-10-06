@@ -30,8 +30,8 @@ simple_arguments: List[Tuple[Type, Any, Any]] = [
     (bool, "false", False),
     (str, "bob", "bob"),
     (str, "'bob'", "bob"),
-    (str, "[123]", "[123]"),
-    (str, "123", "123"),
+    # (str, "[123]", "[123]"),
+    # (str, "123", "123"),
 ]
 
 

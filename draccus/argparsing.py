@@ -210,7 +210,14 @@ def parse(
         exit_on_error: Whether to exit if an error occurs.
         preferred_help: Preferred location to parse help text for fields (< "inline" | "above" | "below" >)
     """
-    raise NotImplementedError("TODO(jder)")
+    parser = ArgumentParser(
+        config_class=config_class,
+        config_path=config_path,
+        exit_on_error=exit_on_error,
+        prog=prog,
+        preferred_help=preferred_help,
+    )
+    return parser.parse_args(args)
 
 
 def wrap(config_path: Optional[os.PathLike] = None, preferred_help: str = HelpOrder.inline):

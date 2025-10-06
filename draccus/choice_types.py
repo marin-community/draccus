@@ -40,7 +40,9 @@ import importlib
 import pkgutil
 from typing import Any, Callable, ClassVar, Dict, Optional, Protocol, Type, TypeVar, overload, runtime_checkable
 
-from pydantic import BaseModel, ConfigDict, TypeAdapter, model_validator
+import pydantic
+from pydantic import ConfigDict, TypeAdapter, model_validator
+
 from draccus.utils import ParsingError
 
 T = TypeVar("T")
@@ -73,8 +75,10 @@ class ChoiceType(Protocol):
         ...
 
 
-class ChoiceRegistryBase(ChoiceType):
+class ChoiceRegistryBase(pydantic.BaseModel):
     _choice_registry: ClassVar[Dict[str, Any]]
+
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="wrap")
     @classmethod
@@ -82,15 +86,27 @@ class ChoiceRegistryBase(ChoiceType):
         if isinstance(values, cls):
             return values
         type_name = values.get(CHOICE_TYPE_KEY, None)
-        if type_name is None:
+        if cls in cls.get_known_choices().values():
+            # We are one of the choices already
+            if type_name is not None:
+                raise ParsingError(f"got choice key '{type_name}' when decoding a {cls} (as opposed to a superclass)")
             return handler(values)
-        try:
-            choice_class = cls.get_choice_class(type_name)
-        except KeyError:
-            raise ParsingError(f"got choice key '{type_name}' but expected one of {cls.get_known_choices().keys()}")
+        else:
+            if type_name is None:
+                type_name = cls.default_choice_name()
+            if type_name is None:
+                raise ParsingError(
+                    f"expected a '{CHOICE_TYPE_KEY}' key with a value of one of {cls.get_known_choices().keys()}"
+                )
+            try:
+                choice_class = cls.get_choice_class(type_name)
+            except KeyError:
+                raise ParsingError(
+                    f"got choice key '{type_name}' but expected one of {cls.get_known_choices().keys()}"
+                ) from None
 
-        adapter = TypeAdapter(choice_class)
-        return adapter.validate_python({k: v for k, v in values.items() if k != CHOICE_TYPE_KEY})
+            adapter = TypeAdapter(choice_class)
+            return adapter.validate_python({k: v for k, v in values.items() if k != CHOICE_TYPE_KEY})
 
     @classmethod
     def get_choice_class(cls, name: str) -> Any:

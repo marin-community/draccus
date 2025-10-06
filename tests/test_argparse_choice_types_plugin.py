@@ -35,10 +35,10 @@ def test_plugin_registry_argparse():
     with pytest.raises(argparse.ArgumentError):
         Something.setup("--model.type baby")
 
-    with pytest.raises(ParsingError):
+    with pytest.raises(TypeError):
         Something.setup("--model.type gpt --model.layers 12 --model.hidden_size 6")
 
-    with pytest.raises(ParsingError):
+    with pytest.raises(TypeError):
         Something.setup("--model.attn_pdrop 12")
 
 

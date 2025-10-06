@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Any, Type
 
 import pytest
+from pydantic import ValidationError
 
 import draccus
 from draccus import ParsingError
@@ -36,7 +37,7 @@ def test_not_passing_required_argument_raises_error(simple_attribute):
     class SomeDataclass(TestSetup):
         some_attribute: some_type  # type: ignore
 
-    with raises(DecodingError):
+    with raises(ValidationError):
         _ = SomeDataclass.setup("")
 
 
@@ -88,7 +89,7 @@ def test_not_providing_required_argument_throws_error(some_type):
         a: some_type  # type: ignore
         """some docstring for attribute 'a'"""
 
-    with raises(ParsingError):
+    with raises(ValidationError):
         _ = SomeClass.setup("")
 
 

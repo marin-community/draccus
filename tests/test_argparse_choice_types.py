@@ -5,6 +5,7 @@ import argparse
 import dataclasses
 
 import pytest
+from pydantic import ConfigDict
 
 from draccus import ParsingError
 from draccus.choice_types import ChoiceRegistry
@@ -45,7 +46,7 @@ def test_choice_registry_argparse():
     with pytest.raises(argparse.ArgumentError):
         Something.setup("--person.type baby --person.name bob")
 
-    with pytest.raises(ParsingError):
+    with pytest.raises(TypeError):
         Something.setup("--person.type adult --person.name bob --person.age 10 --person.favorite_toy truck")
 
     with pytest.raises(ParsingError):
