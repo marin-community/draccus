@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_union_error_message_dataclasses[missing]
+  '''
+  `x`: Could not decode the value into any of the given types:
+      Baz_e: Missing required field(s) `z` for Baz_e
+      Bar_e: The fields `y` are not valid for Bar_e
+  
+  '''
+# ---
+# name: test_union_error_message_dataclasses[wrong-type]
+  '''
+  `x`: Could not decode the value into any of the given types:
+      Baz_e: `z`: Couldn't parse '1.2.3' into an int
+      Bar_e: `z`: Couldn't parse '1.2.3' into a bool
+  
+  '''
+# ---

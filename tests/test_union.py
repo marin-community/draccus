@@ -145,24 +145,16 @@ class Foo_e(TestSetup):
     x: Union[Baz_e, Bar_e] = Bar_e(False)
 
 
-def test_union_error_message_dataclasses():
+def test_union_error_message_dataclasses(snapshot):
     with pytest.raises(DecodingError) as e:
         Foo_e.setup("--x.z 1.2.3")
 
-    assert """`x`: Could not decode the value into any of the given types:
-    Baz_e: `z`: Couldn't parse '1.2.3' into an int
-    Bar_e: `z`: Couldn't parse '1.2.3' into a bool""".strip() in str(
-        e.value
-    )
+    assert snapshot(name="wrong-type") == str(e.value)
 
     with pytest.raises(DecodingError) as e:
         Foo_e.setup("--x.y foo")
 
-    assert """`x`: Could not decode the value into any of the given types:
-    Baz_e: Missing required field(s) `z` for Baz_e
-    Bar_e: The fields `y` are not valid for Bar_e""".strip() in str(
-        e.value
-    )
+    assert snapshot(name="missing") == str(e.value)
 
 
 @dataclass
