@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Union
 
 import pytest
+from pydantic import ValidationError
 
 from draccus import utils
 from draccus.utils import DecodingError
@@ -79,7 +80,7 @@ def test_union_error_message_atomics(snapshot):
     class Foo(TestSetup):
         x: Union[float, bool] = 0
 
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         Foo.setup("--x 1.2.3")
 
     assert snapshot == str(e.value)
@@ -90,7 +91,7 @@ def test_union_error_message_nested(snapshot):
     class Foo(TestSetup):
         x: Union[float, Union[int, bool]] = 0
 
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         Foo.setup("--x 1.2.3")
 
     assert snapshot == str(e.value)
@@ -113,11 +114,8 @@ def test_decode_union_with_dataclass_and_atomic():
     foo = Foo_u.setup("--x.z 1")
     assert foo.x == Baz_u(z=1)
 
-    try:
+    with pytest.raises(ValidationError):
         foo = Foo_u.setup("--x.z 1.2")
-        raise AssertionError()
-    except DecodingError:
-        pass
 
 
 @dataclass(frozen=True)
@@ -137,12 +135,12 @@ class Foo_e(TestSetup):
 
 
 def test_union_error_message_dataclasses(snapshot):
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         Foo_e.setup("--x.z 1.2.3")
 
     assert snapshot(name="wrong-type") == str(e.value)
 
-    with pytest.raises(DecodingError) as e:
+    with pytest.raises(ValidationError) as e:
         Foo_e.setup("--x.y foo")
 
     assert snapshot(name="missing") == str(e.value)

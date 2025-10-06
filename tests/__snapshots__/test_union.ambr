@@ -1,34 +1,51 @@
 # serializer version: 1
 # name: test_union_error_message_atomics
   '''
-  `x`: Could not decode the value into any of the given types:
-      float: Couldn't parse '1.2.3' into a float
-      bool: Couldn't parse '1.2.3' into a bool
-  
+  2 validation errors for Foo
+  x.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/float_parsing
+  x.bool
+    Input should be a valid boolean, unable to interpret input [type=bool_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/bool_parsing
   '''
 # ---
 # name: test_union_error_message_dataclasses[missing]
   '''
-  `x`: Could not decode the value into any of the given types:
-      Baz_e: Missing required field(s) `z` for Baz_e
-      Bar_e: The fields `y` are not valid for Bar_e
-  
+  2 validation errors for Foo_e
+  x.Baz_e.z
+    Field required [type=missing, input_value={'y': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/2.11/v/missing
+  x.Bar_e.z
+    Field required [type=missing, input_value={'y': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/2.11/v/missing
   '''
 # ---
 # name: test_union_error_message_dataclasses[wrong-type]
   '''
-  `x`: Could not decode the value into any of the given types:
-      Baz_e: `z`: Couldn't parse '1.2.3' into an int
-      Bar_e: `z`: Couldn't parse '1.2.3' into a bool
-  
+  3 validation errors for Foo_e
+  x.Baz_e.z
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/int_parsing
+  x.Baz_e.y
+    Field required [type=missing, input_value={'z': '1.2.3'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/2.11/v/missing
+  x.Bar_e.z
+    Input should be a valid boolean, unable to interpret input [type=bool_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/bool_parsing
   '''
 # ---
 # name: test_union_error_message_nested
   '''
-  `x`: Could not decode the value into any of the given types:
-      float: Couldn't parse '1.2.3' into a float
-      int: Couldn't parse '1.2.3' into an int
-      bool: Couldn't parse '1.2.3' into a bool
-  
+  3 validation errors for Foo
+  x.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/float_parsing
+  x.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/int_parsing
+  x.bool
+    Input should be a valid boolean, unable to interpret input [type=bool_parsing, input_value='1.2.3', input_type=str]
+      For further information visit https://errors.pydantic.dev/2.11/v/bool_parsing
   '''
 # ---
