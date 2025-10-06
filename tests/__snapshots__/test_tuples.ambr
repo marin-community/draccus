@@ -1,4 +1,9 @@
 # serializer version: 1
 # name: test_tuple_with_n_items_takes_only_n_values
-  '`ints`: Expected 2 items, got 5'
+  '''
+  1 validation error for Container
+  ints
+    Tuple should have at most 2 items after validation, not 5 [type=too_long, input_value=[4, 5, 6, 7, 8], input_type=list]
+      For further information visit https://errors.pydantic.dev/2.11/v/too_long
+  '''
 # ---
