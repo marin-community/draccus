@@ -182,7 +182,33 @@ class PluginRegistry(ChoiceRegistryBase):
     @classmethod
     def get_choice_class(cls, name: str) -> Any:
         cls._discover_packages()
-        return cls._choice_registry[name]
+        try:
+            return cls._choice_registry[name]
+        except KeyError:
+            if "." not in name:
+                raise
+
+        module_path, _, class_name = name.rpartition(".")
+        if not module_path:
+            # rpartition returns an empty string when no separator is found, so
+            # we shouldn't get here, but this keeps mypy happy and guards
+            # against malformed inputs.
+            raise KeyError(name)
+
+        try:
+            module = importlib.import_module(module_path)
+        except ModuleNotFoundError as e:
+            raise KeyError(name) from e
+
+        try:
+            choice_cls = getattr(module, class_name)
+        except AttributeError as e:
+            raise KeyError(name) from e
+
+        if not isinstance(choice_cls, type) or not issubclass(choice_cls, cls):
+            raise KeyError(name)
+
+        return choice_cls
 
     @classmethod
     def get_known_choices(cls) -> Dict[str, Any]:
