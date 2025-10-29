@@ -2,6 +2,7 @@
 # Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
 
 """Tests for literal type support in Draccus."""
+
 import io
 import sys
 from contextlib import redirect_stdout
@@ -44,10 +45,10 @@ def test_string_literal_valid():
     assert config.mode == "test"
 
 
-def test_string_literal_invalid():
+def test_string_literal_invalid(snapshot):
     with pytest.raises(Exception) as exc_info:
         decode(StringLiteralConfig, {"mode": "invalid"})
-    assert "into one of" in str(exc_info.value)
+    assert snapshot == exc_info.value
 
 
 def test_numeric_literal_valid():
@@ -61,10 +62,10 @@ def test_numeric_literal_valid():
     assert config.size == 30
 
 
-def test_numeric_literal_invalid():
+def test_numeric_literal_invalid(snapshot):
     with pytest.raises(Exception) as exc_info:
         decode(NumericLiteralConfig, {"size": 15})
-    assert "into one of" in str(exc_info.value)
+        assert snapshot == exc_info.value
 
 
 def test_mixed_literal_valid():
@@ -84,47 +85,29 @@ def test_mixed_literal_valid():
     assert config.size is False
 
 
-def test_mixed_literal_invalid():
+def test_mixed_literal_invalid(snapshot):
     with pytest.raises(Exception) as exc_info:
         decode(MixedLiteralConfig, {"mode": "invalid", "size": "small"})
-    assert "into one of" in str(exc_info.value)
+    assert snapshot(name="mode") == exc_info.value
 
     with pytest.raises(Exception) as exc_info:
         decode(MixedLiteralConfig, {"mode": "train", "size": 15})
-    assert "into one of" in str(exc_info.value)
+    assert snapshot(name="size") == exc_info.value
 
 
-def test_literal_help_text():
+def test_literal_help_text(snapshot):
     """Test that help text is generated correctly for literal types."""
     # Test string literal help
-    config = StringLiteralConfig.get_help_text("--help")
-    help_text = str(config)
-    assert "mode" in help_text
-    assert "train" in help_text
-    assert "eval" in help_text
-    assert "test" in help_text
-    assert "{small,medium,large}" in help_text
+    help_text = StringLiteralConfig.get_help_text("--help")
+    assert snapshot(name="string_literal") == help_text
 
     # Test numeric literal help
-    config = NumericLiteralConfig.get_help_text("--help")
-    help_text = str(config)
-    assert "size" in help_text
-    assert "10" in help_text
-    assert "20" in help_text
-    assert "30" in help_text
-    assert "{10,20,30}" in help_text
+    help_text = NumericLiteralConfig.get_help_text("--help")
+    assert snapshot(name="numeric_literal") == help_text
 
     # Test mixed literal help
-    config = MixedLiteralConfig.get_help_text("--help")
-    help_text = str(config)
-    assert "mode" in help_text
-    assert "train" in help_text
-    assert "1" in help_text
-    assert "True" in help_text
-    assert "size" in help_text
-    assert "small" in help_text
-    assert "20" in help_text
-    assert "False" in help_text
+    help_text = MixedLiteralConfig.get_help_text("--help")
+    assert snapshot(name="mixed_literal") == help_text
 
 
 def test_literal_argparse_valid():
