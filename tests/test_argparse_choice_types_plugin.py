@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+
 import argparse
 import dataclasses
 import sys
@@ -44,40 +47,9 @@ def test_plugin_registry_argparse():
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason="requires python3.9 or higher")
-def test_choice_registry_examine_help():
+def test_choice_registry_examine_help(snapshot):
     @dataclasses.dataclass
     class Something(TestSetup):
         model: ModelConfig = MlpConfig(10, 5)
 
-    # TODO: why is the default: None here?
-    target = """
-usage: draccus [-h] [--config_path str] [--model str] [--model.type {mlp,gpt}]
-               [--model.hidden_size int] [--model.layers int]
-               [--model.attn_pdrop float]
-
-options:
-  -h, --help            show this help message and exit
-  --config_path str     Path for a config file to parse with draccus (default:
-                        None)
-  --model str           Config file for model (default: None)
-
-test_choice_registry_examine_help.<locals>.Something:
-
-ModelConfig ['model']:
-
-  --model.type {mlp,gpt}
-                        Which type of ModelConfig ['model'] to use (default:
-                        None)
-
-MlpConfig ['model']:
-
-  --model.layers int
-  --model.hidden_size int
-
-GptConfig ['model']:
-
-  --model.layers int
-  --model.attn_pdrop float
-"""
-    print(Something.get_help_text())
-    assert Something.get_help_text().strip() == target.strip()
+    assert Something.get_help_text() == snapshot

@@ -1,0 +1,32 @@
+# serializer version: 1
+# name: test_choice_registry_examine_help
+  '''
+  usage: draccus [-h] [--config_path str] [--model str] [--model.type {mlp,gpt}]
+                 [--model.hidden_size int] [--model.layers int]
+                 [--model.attn_pdrop float]
+  
+  options:
+    -h, --help            show this help message and exit
+    --config_path str     Path for a config file to parse with draccus (default:
+                          None)
+    --model str           Config file for model (default: None)
+  
+  test_choice_registry_examine_help.<locals>.Something:
+  
+  ModelConfig ['model']:
+  
+    --model.type {mlp,gpt}
+                          Which type of ModelConfig ['model'] to use (default:
+                          None)
+  
+  MlpConfig ['model']:
+  
+    --model.layers int
+    --model.hidden_size int
+  
+  GptConfig ['model']:
+  
+    --model.layers int
+    --model.attn_pdrop float
+  '''
+# ---

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+
 from dataclasses import dataclass
 
 from draccus.wrappers.docstring import HelpOrder, get_attribute_docstring, get_preferred_help_text
@@ -42,25 +45,6 @@ def test_get_preferred_help_text():
     assert misc2_help_above == misc2_help_inline
 
 
-def test_default_help_inline():
-    target = """
-usage: draccus [-h] [--config_path str] [--a int] [--cache str] [--misc str]
-               [--misc2 str]
-
-options:
-  -h, --help         show this help message and exit
-  --config_path str  Path for a config file to parse with draccus (default:
-                     None)
-
-PreferredHelpConfig:
-  A simple base-class example
-
-  --a int            Parameter (int) controlling number of iterations
-                     (default: None)
-  --cache str        Path to cache directory (as string) (default: None)
-  --misc str         Sets the mode of miscellaneous parameter handling
-                     (default: standard)
-  --misc2 str        Controls the behavior of `misc2` (default: left-first)
-    """
-    assert PreferredHelpConfig.get_help_text("--help").strip() == target.strip()
-    assert PreferredHelpConfig.get_help_text("-h").strip() == target.strip()
+def test_default_help_inline(snapshot):
+    assert PreferredHelpConfig.get_help_text("--help") == snapshot
+    assert PreferredHelpConfig.get_help_text("-h") == snapshot
