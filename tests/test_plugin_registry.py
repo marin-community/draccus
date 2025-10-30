@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: MIT
+# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+
+# SPDX-License-Identifier: MIT
 
 import draccus
 
