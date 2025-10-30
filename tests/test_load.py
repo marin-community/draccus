@@ -10,7 +10,7 @@ from draccus.utils import Dataclass, DraccusException
 
 
 @dataclass
-class TestConfig:
+class SampleConfig:
     a: int = 1
     b: str = "test"
     c: float = 3.14
@@ -21,14 +21,14 @@ def test_load_from_file(tmp_path):
     config_path.write_text("a: 2\nb: hello\nc: 1.23")
 
     # Test with file path
-    cfg = draccus.load(TestConfig, config_path)
+    cfg = draccus.load(SampleConfig, config_path)
     assert cfg.a == 2
     assert cfg.b == "hello"
     assert cfg.c == 1.23
 
     # Test with file object
     with open(config_path, "r") as f:
-        cfg = draccus.load(TestConfig, f)
+        cfg = draccus.load(SampleConfig, f)
     assert cfg.a == 2
     assert cfg.b == "hello"
     assert cfg.c == 1.23
@@ -36,7 +36,7 @@ def test_load_from_file(tmp_path):
 
 def test_loads_from_string():
     config_str = "a: 2\nb: hello\nc: 1.23"
-    cfg = draccus.loads(TestConfig, config_str)
+    cfg = draccus.loads(SampleConfig, config_str)
     assert cfg.a == 2
     assert cfg.b == "hello"
     assert cfg.c == 1.23
@@ -45,7 +45,7 @@ def test_loads_from_string():
 def test_load_backwards_compatibility():
     # Test that load still works with string content directly
     config_str = "a: 2\nb: hello\nc: 1.23"
-    cfg = draccus.load(TestConfig, config_str)
+    cfg = draccus.load(SampleConfig, config_str)
     assert cfg.a == 2
     assert cfg.b == "hello"
     assert cfg.c == 1.23
@@ -53,7 +53,7 @@ def test_load_backwards_compatibility():
 
 def test_load_invalid_input():
     with pytest.raises(DraccusException):
-        draccus.load(TestConfig, None)
+        draccus.load(SampleConfig, None)
 
     with pytest.raises(DraccusException):
-        draccus.loads(TestConfig, None)
+        draccus.loads(SampleConfig, None)

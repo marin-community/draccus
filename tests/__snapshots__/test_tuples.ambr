@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_tuple_with_n_items_takes_only_n_values
+  '`ints`: Expected 2 items, got 5'
+# ---

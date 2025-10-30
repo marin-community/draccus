@@ -2,6 +2,7 @@
 # Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
 
 import enum
+import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Dict, Generic, Literal, Tuple, Union
