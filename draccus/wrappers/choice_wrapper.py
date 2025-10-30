@@ -71,6 +71,9 @@ class ChoiceWrapper(AggregateWrapper[Type[ChoiceType]]):
         else:
             arg_name = f"{dest}.{CHOICE_TYPE_KEY}"
 
+        if dest is not None:
+            parser.add_argument(f"--{dest}", type=str, required=False, help=f"Config file for {self.name}")
+
         group.add_argument(
             f"--{arg_name}",
             choices=list(children.keys()),
@@ -96,7 +99,14 @@ class ChoiceWrapper(AggregateWrapper[Type[ChoiceType]]):
 
             # because we "substitute" the choice type for the child, we need to make sure that
             # the child's parent is the same as the choice type's parent
-            return DataclassWrapper(child, parent=self.parent, _field=self._field, name=self.name)
+            return DataclassWrapper(
+                child,
+                parent=self.parent,
+                _field=self._field,
+                name=self.name,
+                preferred_help=self.preferred_help,
+                include_config_arg=False,
+            )
 
         return {name: _wrap_child(child) for name, child in self.choice_type.get_known_choices().items()}
 
