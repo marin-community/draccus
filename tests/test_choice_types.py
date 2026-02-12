@@ -7,7 +7,7 @@ import pytest
 
 import draccus
 from draccus import ParsingError
-from draccus.choice_types import ChoiceRegistry
+from draccus.choice_types import ChoiceRegistry, QNamePluginRegistry
 from draccus.utils import DecodingError
 
 
@@ -60,3 +60,65 @@ def test_is_choicetype():
     assert draccus.utils.is_choice_type(Person)
     assert not draccus.utils.is_choice_type(Adult)
     assert not draccus.utils.is_choice_type(Child)
+
+
+@dataclasses.dataclass
+class QNameModelConfig(QNamePluginRegistry, discover_packages_path="tests.draccus_choice_plugins"):
+    layers: int
+
+
+@dataclasses.dataclass
+class UnregisteredQNameModelConfig(QNameModelConfig):
+    width: int
+
+
+def test_qname_plugin_registry_decode_fallback():
+    qname = f"{UnregisteredQNameModelConfig.__module__}.{UnregisteredQNameModelConfig.__qualname__}"
+
+    decoded = draccus.decode(QNameModelConfig, {"type": qname, "layers": 2, "width": 8})
+
+    assert decoded == UnregisteredQNameModelConfig(layers=2, width=8)
+    assert QNameModelConfig.get_choice_class(qname) is UnregisteredQNameModelConfig
+
+
+def test_qname_plugin_registry_encode_fallback():
+    encoded = draccus.encode(UnregisteredQNameModelConfig(layers=3, width=16), QNameModelConfig)
+
+    assert encoded == {
+        "type": f"{UnregisteredQNameModelConfig.__module__}.{UnregisteredQNameModelConfig.__qualname__}",
+        "layers": 3,
+        "width": 16,
+    }
+
+
+class NestedQNameModels:
+    @dataclasses.dataclass
+    class UnregisteredNestedQNameModelConfig(QNameModelConfig):
+        depth: int
+
+
+def test_qname_plugin_registry_nested_qualname_decode_fallback():
+    nested_qname = (
+        f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__module__}."
+        f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__qualname__}"
+    )
+
+    decoded = draccus.decode(QNameModelConfig, {"type": nested_qname, "layers": 4, "depth": 2})
+
+    assert decoded == NestedQNameModels.UnregisteredNestedQNameModelConfig(layers=4, depth=2)
+
+def test_qname_plugin_registry_nested_qualname_encode_fallback():
+    encoded = draccus.encode(
+        NestedQNameModels.UnregisteredNestedQNameModelConfig(layers=5, depth=3),
+        QNameModelConfig,
+    )
+
+    assert encoded == {
+        "type": (
+            f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__module__}."
+            f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__qualname__}"
+        ),
+        "layers": 5,
+        "depth": 3,
+    }
+

@@ -173,10 +173,10 @@ class PluginRegistry(ChoiceRegistryBase):
         super().__init_subclass__(**kwargs)
         if not hasattr(cls, "_choice_registry"):
             cls._choice_registry = {}
-        if not hasattr(cls, "discover_packages_path"):
-            if discover_packages_path is None:
-                raise ValueError("discover_packages_path must be specified in the class or constructor")
+        if discover_packages_path is not None:
             cls.discover_packages_path = discover_packages_path
+        elif not hasattr(cls, "discover_packages_path"):
+            raise ValueError("discover_packages_path must be specified in the class or constructor")
         cls._did_discover_packages = False
 
     @classmethod
@@ -209,3 +209,69 @@ class PluginRegistry(ChoiceRegistryBase):
             # registration should happen in the initialization of the package, so importing is sufficient
 
         cls._did_discover_packages = True
+
+
+class QNamePluginRegistry(PluginRegistry):
+    """
+    A PluginRegistry that falls back to resolving fully qualified class names.
+
+    This is useful when you want to encode/decode choices using a full class path
+    in addition to registered short names.
+    """
+
+    discover_packages_path: ClassVar[str] = "__qname_plugin_registry_base__"
+
+    def __init_subclass__(cls, discover_packages_path: Optional[str] = None, **kwargs):
+        super().__init_subclass__(discover_packages_path=discover_packages_path, **kwargs)
+        if cls is not QNamePluginRegistry and cls.discover_packages_path == QNamePluginRegistry.discover_packages_path:
+            raise ValueError("discover_packages_path must be specified in the class or constructor")
+
+    @classmethod
+    def get_choice_class(cls, name: str) -> Any:
+        cls._discover_packages()
+        if name in cls._choice_registry:
+            return cls._choice_registry[name]
+        resolved = cls._resolve_fully_qualified_name(name)
+        cls._choice_registry[name] = resolved
+        return resolved
+
+    @classmethod
+    def get_choice_name(cls, subcls: Type) -> str:
+        if subcls is cls and QNamePluginRegistry in cls.__bases__:
+            raise ValueError(f"Cannot find choice name for {subcls}")
+        try:
+            return super().get_choice_name(subcls)
+        except ValueError:
+            return f"{subcls.__module__}.{subcls.__qualname__}"
+
+    @classmethod
+    def _resolve_fully_qualified_name(cls, name: str) -> Any:
+        name_parts = name.split(".")
+        if len(name_parts) < 2:
+            raise KeyError(name)
+
+        module: Optional[Any] = None
+        qualname_parts: list[str] = []
+        for i in range(len(name_parts) - 1, 0, -1):
+            module_name = ".".join(name_parts[:i])
+            try:
+                module = importlib.import_module(module_name)
+            except ImportError:
+                continue
+            qualname_parts = name_parts[i:]
+            break
+
+        if module is None or not qualname_parts:
+            raise KeyError(name)
+
+        obj: Any = module
+        for attr in qualname_parts:
+            try:
+                obj = getattr(obj, attr)
+            except AttributeError as exc:
+                raise KeyError(name) from exc
+
+        if not isinstance(obj, type) or not issubclass(obj, cls):
+            raise KeyError(name)
+        return obj
+
