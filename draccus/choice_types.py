@@ -209,3 +209,44 @@ class PluginRegistry(ChoiceRegistryBase):
             # registration should happen in the initialization of the package, so importing is sufficient
 
         cls._did_discover_packages = True
+
+
+class PluginRegistryWithClassNameFallback(PluginRegistry):
+    """
+    A PluginRegistry that falls back to resolving fully qualified class names.
+
+    This is useful when you want to encode/decode choices using a full class path
+    in addition to registered short names.
+    """
+
+    @classmethod
+    def get_choice_class(cls, name: str) -> Any:
+        cls._discover_packages()
+        if name in cls._choice_registry:
+            return cls._choice_registry[name]
+        resolved = cls._resolve_fully_qualified_name(name)
+        cls._choice_registry[name] = resolved
+        return resolved
+
+    @classmethod
+    def get_choice_name(cls, subcls: Type) -> str:
+        try:
+            return super().get_choice_name(subcls)
+        except ValueError:
+            return f"{subcls.__module__}.{subcls.__qualname__}"
+
+    @classmethod
+    def _resolve_fully_qualified_name(cls, name: str) -> Any:
+        module_name, _, qualname = name.rpartition(".")
+        if not module_name:
+            raise KeyError(name)
+        module = importlib.import_module(module_name)
+        obj: Any = module
+        for attr in qualname.split("."):
+            try:
+                obj = getattr(obj, attr)
+            except AttributeError as exc:
+                raise KeyError(name) from exc
+        if not isinstance(obj, type) or not issubclass(obj, cls):
+            raise KeyError(name)
+        return obj
