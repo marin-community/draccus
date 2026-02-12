@@ -246,16 +246,31 @@ class QNamePluginRegistry(PluginRegistry):
 
     @classmethod
     def _resolve_fully_qualified_name(cls, name: str) -> Any:
-        module_name, _, qualname = name.rpartition(".")
-        if not module_name:
+        name_parts = name.split(".")
+        if len(name_parts) < 2:
             raise KeyError(name)
-        module = importlib.import_module(module_name)
+
+        module: Optional[Any] = None
+        qualname_parts: list[str] = []
+        for i in range(len(name_parts) - 1, 0, -1):
+            module_name = ".".join(name_parts[:i])
+            try:
+                module = importlib.import_module(module_name)
+            except ImportError:
+                continue
+            qualname_parts = name_parts[i:]
+            break
+
+        if module is None or not qualname_parts:
+            raise KeyError(name)
+
         obj: Any = module
-        for attr in qualname.split("."):
+        for attr in qualname_parts:
             try:
                 obj = getattr(obj, attr)
             except AttributeError as exc:
                 raise KeyError(name) from exc
+
         if not isinstance(obj, type) or not issubclass(obj, cls):
             raise KeyError(name)
         return obj

@@ -89,3 +89,21 @@ def test_qname_plugin_registry_encode_fallback():
         "layers": 3,
         "width": 16,
     }
+
+
+class NestedQNameModels:
+    @dataclasses.dataclass
+    class UnregisteredNestedQNameModelConfig(QNameModelConfig):
+        depth: int
+
+
+def test_qname_plugin_registry_nested_qualname_decode_fallback():
+    nested_qname = (
+        f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__module__}."
+        f"{NestedQNameModels.UnregisteredNestedQNameModelConfig.__qualname__}"
+    )
+
+    decoded = draccus.decode(QNameModelConfig, {"type": nested_qname, "layers": 4, "depth": 2})
+
+    assert decoded == NestedQNameModels.UnregisteredNestedQNameModelConfig(layers=4, depth=2)
+
