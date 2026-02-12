@@ -260,6 +260,3 @@ class QNamePluginRegistry(PluginRegistry):
             raise KeyError(name)
         return obj
 
-
-# Backwards compatibility alias.
-PluginRegistryWithClassNameFallback = QNamePluginRegistry
