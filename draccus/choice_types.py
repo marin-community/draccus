@@ -173,10 +173,10 @@ class PluginRegistry(ChoiceRegistryBase):
         super().__init_subclass__(**kwargs)
         if not hasattr(cls, "_choice_registry"):
             cls._choice_registry = {}
-        if not hasattr(cls, "discover_packages_path"):
-            if discover_packages_path is None:
-                raise ValueError("discover_packages_path must be specified in the class or constructor")
+        if discover_packages_path is not None:
             cls.discover_packages_path = discover_packages_path
+        elif not hasattr(cls, "discover_packages_path"):
+            raise ValueError("discover_packages_path must be specified in the class or constructor")
         cls._did_discover_packages = False
 
     @classmethod
@@ -211,13 +211,20 @@ class PluginRegistry(ChoiceRegistryBase):
         cls._did_discover_packages = True
 
 
-class PluginRegistryWithClassNameFallback(PluginRegistry):
+class QNamePluginRegistry(PluginRegistry):
     """
     A PluginRegistry that falls back to resolving fully qualified class names.
 
     This is useful when you want to encode/decode choices using a full class path
     in addition to registered short names.
     """
+
+    discover_packages_path: ClassVar[str] = "__qname_plugin_registry_base__"
+
+    def __init_subclass__(cls, discover_packages_path: Optional[str] = None, **kwargs):
+        super().__init_subclass__(discover_packages_path=discover_packages_path, **kwargs)
+        if cls is not QNamePluginRegistry and cls.discover_packages_path == QNamePluginRegistry.discover_packages_path:
+            raise ValueError("discover_packages_path must be specified in the class or constructor")
 
     @classmethod
     def get_choice_class(cls, name: str) -> Any:
@@ -230,6 +237,8 @@ class PluginRegistryWithClassNameFallback(PluginRegistry):
 
     @classmethod
     def get_choice_name(cls, subcls: Type) -> str:
+        if subcls is cls and QNamePluginRegistry in cls.__bases__:
+            raise ValueError(f"Cannot find choice name for {subcls}")
         try:
             return super().get_choice_name(subcls)
         except ValueError:
@@ -250,3 +259,7 @@ class PluginRegistryWithClassNameFallback(PluginRegistry):
         if not isinstance(obj, type) or not issubclass(obj, cls):
             raise KeyError(name)
         return obj
+
+
+# Backwards compatibility alias.
+PluginRegistryWithClassNameFallback = QNamePluginRegistry

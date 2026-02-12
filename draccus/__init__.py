@@ -13,6 +13,7 @@ from .choice_types import (
     ChoiceType,
     PluginRegistry,
     PluginRegistryWithClassNameFallback,
+    QNamePluginRegistry,
 )
 from .fields import field
 from .options import ConfigType, Options, config_type
@@ -32,6 +33,7 @@ __all__ = [
     "ParsingError",
     "PluginRegistry",
     "PluginRegistryWithClassNameFallback",
+    "QNamePluginRegistry",
     "config_type",
     "decode",
     "dump",
