@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+# Copyright 2025-2026 The Board of Trustees of the Leland Stanford Junior University
 
 """
 A Choice Type aka "Sum Type" is a type that can be one of several types. Typically this is through subtyping,
@@ -237,6 +237,8 @@ class QNamePluginRegistry(PluginRegistry):
 
     @classmethod
     def get_choice_name(cls, subcls: Type) -> str:
+        if not isinstance(subcls, type) or not issubclass(subcls, cls):
+            raise ValueError(f"{subcls} is not a subclass of {cls}")
         if subcls is cls and QNamePluginRegistry in cls.__bases__:
             raise ValueError(f"Cannot find choice name for {subcls}")
         try:
@@ -256,8 +258,12 @@ class QNamePluginRegistry(PluginRegistry):
             module_name = ".".join(name_parts[:i])
             try:
                 module = importlib.import_module(module_name)
-            except ImportError:
-                continue
+            except ModuleNotFoundError as exc:
+                # Keep searching shorter module prefixes only when this module path
+                # itself does not exist. If import failed inside the module, surface it.
+                if exc.name == module_name:
+                    continue
+                raise
             qualname_parts = name_parts[i:]
             break
 
@@ -274,4 +280,3 @@ class QNamePluginRegistry(PluginRegistry):
         if not isinstance(obj, type) or not issubclass(obj, cls):
             raise KeyError(name)
         return obj
-

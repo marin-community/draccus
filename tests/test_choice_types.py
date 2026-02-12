@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+# Copyright 2025-2026 The Board of Trustees of the Leland Stanford Junior University
 
 import dataclasses
 
@@ -91,6 +91,26 @@ def test_qname_plugin_registry_encode_fallback():
     }
 
 
+def test_qname_plugin_registry_rejects_non_subclass_name_lookup():
+    with pytest.raises(ValueError):
+        QNameModelConfig.get_choice_name(Adult)
+
+
+def test_qname_plugin_registry_does_not_swallow_import_errors(monkeypatch):
+    monkeypatch.setattr(QNameModelConfig, "_did_discover_packages", True)
+    failing_module = "tests.draccus_choice_plugins.import_fails"
+
+    def fake_import_module(name: str, package=None):
+        if name == failing_module:
+            raise ModuleNotFoundError("boom", name="missing_dependency")
+        raise ModuleNotFoundError(name=name)
+
+    monkeypatch.setattr("draccus.choice_types.importlib.import_module", fake_import_module)
+
+    with pytest.raises(ModuleNotFoundError, match="boom"):
+        QNameModelConfig.get_choice_class(f"{failing_module}.BrokenConfig")
+
+
 class NestedQNameModels:
     @dataclasses.dataclass
     class UnregisteredNestedQNameModelConfig(QNameModelConfig):
@@ -107,6 +127,7 @@ def test_qname_plugin_registry_nested_qualname_decode_fallback():
 
     assert decoded == NestedQNameModels.UnregisteredNestedQNameModelConfig(layers=4, depth=2)
 
+
 def test_qname_plugin_registry_nested_qualname_encode_fallback():
     encoded = draccus.encode(
         NestedQNameModels.UnregisteredNestedQNameModelConfig(layers=5, depth=3),
@@ -121,4 +142,3 @@ def test_qname_plugin_registry_nested_qualname_encode_fallback():
         "layers": 5,
         "depth": 3,
     }
-

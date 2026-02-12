@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright 2025 The Board of Trustees of the Leland Stanford Junior University
+# Copyright 2025-2026 The Board of Trustees of the Leland Stanford Junior University
 
 import dataclasses
 from typing import Optional
