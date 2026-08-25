@@ -8,7 +8,7 @@ import dataclasses
 import inspect
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 from .. import utils
 from . import docstring
@@ -138,12 +138,7 @@ class FieldWrapper(Wrapper[dataclasses.Field]):
             if not _arg_options.get("help"):
                 _arg_options["help"] = f"Must be one of: {', '.join(str(c) for c in args)}"
         else:
-            _arg_options["type"] = tpe
-            try:
-                _arg_options["type"].__name__ = self.type.__repr__().replace("typing.", "")
-            except Exception:
-                # Only to prettify printing, if fails just continue
-                pass
+            _arg_options["type"] = _display_type(self.type)
 
         return _arg_options
 
@@ -387,3 +382,32 @@ def only_keep_action_args(options: Dict[str, Any], action: Union[str, Any]) -> D
         logger.debug(f"Kept options: \t{kept_options.keys()}")
         logger.debug(f"Removed options: \t{deleted_options.keys()}")
     return kept_options
+
+
+def _display_type(declared: Any) -> Callable[[str], Any]:
+    """Return a value suitable for argparse's ``type`` argument.
+
+    This value is only used to render the type name in ``--help``:
+    :meth:`draccus.argparsing.ArgumentParser.parse_known_args` overwrites
+    ``action.type`` with ``str`` before parsing whenever ``--help``/``-h`` are
+    absent, because draccus decodes every value itself. With ``--help``
+    present the pass-through is called on any value argparse consumes before
+    the help action fires, so it must return its input unchanged.
+
+    Python 3.14 rejects a non-callable ``type`` in ``add_argument``, and union
+    objects are not callable there (``typing.Optional[str]`` is a
+    ``_GenericAlias`` on 3.13 but a ``Union`` on 3.14). Everything is wrapped
+    so behaviour is identical on every version, and no ``__name__`` is written
+    onto cached ``typing`` objects. ``__draccus_type__`` keeps the declared
+    type reachable for :func:`draccus.wrappers.field_metavar.get_metavar`.
+    """
+
+    def passthrough(value):
+        return value
+
+    if isinstance(declared, type):
+        passthrough.__name__ = declared.__name__
+    else:
+        passthrough.__name__ = repr(declared).replace("typing.", "")
+    passthrough.__draccus_type__ = declared  # type: ignore[attr-defined]
+    return passthrough

@@ -29,9 +29,14 @@ def get_metavar(t: Type, top_level: bool = True) -> Optional[str]:
     produced the given parsing_fn.
 
     returns None if the name shouldn't be changed.
+
+    `t` may also be a pass-through wrapper produced by
+    `draccus.wrappers.field_wrapper._display_type`, in which case the declared
+    type is read back from its `__draccus_type__` attribute.
     """
     # TODO: Maybe we can create the name for each returned call, a bit like how
     # we dynamically create the parsing function itself?
+    t = getattr(t, "__draccus_type__", t)
     new_name: Optional[str] = getattr(t, "__name__", None)
 
     optional = is_optional(t)
