@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 import pytest
 
@@ -161,3 +161,71 @@ class Foo(TestSetup):
 def test_union_argparse_dict():
     foo = Foo.setup('--x \'{"a": {"y": 1}, "b": {"y": 2}}\'')
     assert foo.x == {"a": Bar(y=1), "b": Bar(y=2)}
+
+
+def test_union_field_builds_parser_and_parses():
+    """Union-typed fields must survive parser construction.
+
+    Python 3.14 validates that argparse's ``type`` is callable inside
+    ``add_argument``, and union objects are not callable there, so building the
+    parser used to raise ``TypeError`` before a single argument was parsed.
+    """
+
+    @dataclass
+    class Foo(TestSetup):
+        path: Optional[str] = None
+        mapping: Optional[Dict[str, int]] = None
+        n: int = 0
+
+    assert Foo.setup("") == Foo()
+    assert Foo.setup("--path foo") == Foo(path="foo")
+    assert Foo.setup("--n 5") == Foo(n=5)
+
+
+def test_display_type_wraps_non_callable():
+    from draccus.wrappers.field_wrapper import _display_type
+
+    class NotCallable:
+        def __repr__(self):
+            return "typing.Optional[str]"
+
+    declared = NotCallable()
+    assert not callable(declared)
+
+    wrapped = _display_type(declared)
+    assert callable(wrapped)
+    assert wrapped("abc") == "abc"
+    assert wrapped.__name__ == "Optional[str]"
+    assert wrapped.__draccus_type__ is declared
+
+
+def test_union_field_help_with_value_exits_cleanly():
+    @dataclass
+    class Foo(TestSetup):
+        path: Optional[str] = None
+
+    with pytest.raises(SystemExit) as exc:
+        Foo.setup("--path foo --help")
+    assert exc.value.code == 0
+
+
+def test_union_field_metavar_preserves_declared_type():
+    from draccus.wrappers.field_metavar import get_metavar
+    from draccus.wrappers.field_wrapper import _display_type
+
+    wrapped = _display_type(Optional[str])
+    assert get_metavar(wrapped) == "[str]"
+
+    wrapped = _display_type(Optional[Dict[str, int]])
+    assert get_metavar(wrapped) == "[dict[str,int]]"
+
+
+def test_union_field_help_text():
+    @dataclass
+    class Foo(TestSetup):
+        path: Optional[str] = None
+        mapping: Optional[Dict[str, int]] = None
+
+    help_text = Foo.get_help_text()
+    assert "--path [str]" in help_text
+    assert "--mapping [dict[str,int]]" in help_text
