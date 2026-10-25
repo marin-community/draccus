@@ -153,7 +153,7 @@ class ComputeConfig:
     """ Config for training resources """
     # The number of workers for training
     workers: int = field(default=8)
-    # The number of workers for training
+    # The number of workers for evaluation
     eval_workers: Optional[int] = field(default=None)
 
 @dataclass
@@ -261,7 +261,7 @@ class ComputeConfig:
     """ Config for training resources """
     # The number of workers for training
     workers: int = field(default=8)
-    # The number of workers for training
+    # The number of workers for evaluation
     eval_workers: Optional[int] = field(default=None)
 
 @dataclass
