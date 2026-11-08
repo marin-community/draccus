@@ -96,7 +96,7 @@ def load(t: Type[Dataclass], stream: Union[str, TextIO, os.PathLike]) -> Datacla
     """
     if isinstance(stream, (str, os.PathLike)) and os.path.exists(stream):
         # If stream is a file path, open it
-        with open(stream, "r") as f:
+        with open(stream, "r", encoding="utf-8") as f:
             dictionary = load_config(f, file=stream)
     else:
         # If stream is a file object or string content
